@@ -2,8 +2,8 @@ import cupy as np
 import torch
 import torch.distributed as dist
 from cupy import matmul as mul
-from cupy.core.dlpack import toDlpack
-from cupy.core.dlpack import fromDlpack
+from cupy import ndarray as ndar
+from cupy import fromDlpack
 from torch.utils.dlpack import to_dlpack
 from torch.utils.dlpack import from_dlpack
 
@@ -36,8 +36,8 @@ def update_W(W, a_last, z, u, rho):
     #update W
     temp1 = z + u/rho
 
-    temp1 = from_dlpack(toDlpack(temp1))
-    a_last = from_dlpack(toDlpack(a_last))
+    temp1 = from_dlpack(ndar.toDlpack(temp1))
+    a_last = from_dlpack(ndar.toDlpack(a_last))
 
     data1 = torch.mm(temp1, torch.t(a_last))
     data2 = torch.mm(a_last, torch.t(a_last))
@@ -52,7 +52,7 @@ def update_W(W, a_last, z, u, rho):
         inverse_data = torch.pinverse(data2)
         W = torch.mm(data1, inverse_data)
     else:
-        W = from_dlpack(toDlpack(W))
+        W = from_dlpack(ndar.toDlpack(W))
         # W = None
     dist.broadcast(W, src=0)
 
